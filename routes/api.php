@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlueprintController;
+use App\Http\Controllers\ContentController;
+use App\Http\Controllers\PostController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -13,13 +15,21 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::controller(BluePrintController::class)->prefix('/blueprints')->group(function() {
         Route::get('/', 'index')->name('blueprints.index');
-        Route::post('/store', 'store')->name('blueprints.store');
+        Route::post('/', 'store')->name('blueprints.store');
         Route::get('/{blueprint}', 'show')->name('blueprints.show');
-        Route::put('/{blueprint}/update', 'update')->name('blueprints.update');
-        Route::delete('/{blueprint}/delete', 'destroy')->name('blueprints.destroy');
-        
-        // Route::delete('/{blueprint}/archive', 'archive')->name('blueprints.archive');
-        // Route::post('/{blueprint}/restore', 'restore')->name('blueprints.restore');
-        // Route::delete('/{blueprint}/forceDelete', 'forceDelete')->name('blueprints.forceDelete');
+        Route::put('/{blueprint}', 'update')->name('blueprints.update');
+        Route::delete('/{blueprint}', 'destroy')->name('blueprints.destroy');
+    });
+
+    Route::controller(ContentController::class)->prefix('/content')->group(function () {
+        Route::get('/', 'index')->name('content.index');
+        Route::post('/repurpose', 'repurpose')->name('content.repurpose');
+        Route::get('/{rawContent}', 'show')->name('content.show');
+    });
+
+    Route::controller(PostController::class)->prefix('/generated-posts')->group(function () {
+        Route::get('/', 'index')->name('posts.index');
+        Route::get('/{post}', 'show')->name('posts.show');
+        Route::patch('/{post}/status', 'updateStatus')->name('posts.status');
     });
 });
