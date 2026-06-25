@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class RawContent extends Model
 {
@@ -22,5 +23,10 @@ class RawContent extends Model
     public function blueprint(): BelongsTo
     {
         return $this->belongsTo(Blueprint::class);
+    }
+
+    public function generatedPost(): HasOne
+    {
+        return $this->hasOne(GeneratedPost::class);
     }
 }
