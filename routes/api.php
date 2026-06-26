@@ -27,9 +27,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{rawContent}', 'show')->name('content.show');
     });
 
-    Route::controller(PostController::class)->prefix('/generated-posts')->group(function () {
+    Route::controller(PostController::class)->prefix('/posts')->group(function () {
         Route::get('/', 'index')->name('posts.index');
-        Route::get('/{post}', 'show')->name('posts.show');
-        Route::patch('/{post}/status', 'updateStatus')->name('posts.status');
+        Route::get('/{id}', 'show')->name('posts.show');
+        Route::patch('/{id}/status', 'updateStatus')->name('posts.status');
     });
 });
