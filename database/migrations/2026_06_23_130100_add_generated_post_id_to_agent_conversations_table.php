@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('agent_conversations', function (Blueprint $table) {
-            $table->foreignId('generated_post_id')->after('id')->constrained()->cascadeOnDelete();
+            $table->foreignId('generated_post_id')->nullable()->after('id')->constrained()->cascadeOnDelete();
         });
     }
 

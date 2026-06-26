@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class GeneratedPost extends Model
 {
@@ -30,5 +31,10 @@ class GeneratedPost extends Model
     public function rawContent(): BelongsTo
     {
         return $this->belongsTo(RawContent::class);
+    }
+
+    public function conversations(): HasMany
+    {
+        return $this->hasMany(\App\Models\AgentConversation::class, 'generated_post_id');
     }
 }

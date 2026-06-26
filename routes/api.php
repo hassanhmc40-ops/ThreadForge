@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlueprintController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ContentController;
 use App\Http\Controllers\PostController;
 use Illuminate\Support\Facades\Route;
@@ -31,5 +32,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', 'index')->name('posts.index');
         Route::get('/{id}', 'show')->name('posts.show');
         Route::patch('/{id}/status', 'updateStatus')->name('posts.status');
+    });
+
+    Route::controller(ChatController::class)->prefix('/posts/{id}/chat')->group(function () {
+        Route::post('/', 'chat')->name('chat.chat');
+        Route::get('/', 'history')->name('chat.history');
     });
 });
