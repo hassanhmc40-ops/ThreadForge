@@ -52,8 +52,8 @@ class ChatController extends Controller
         $agent = new GhostwriterAgent(
             instructions: $systemPrompt,
             tools: [
-                new \App\Tools\GetCampaignRules,
-                new \App\Tools\GetPostHistory,
+                new \App\Tools\GetCampaignRules(),
+                new \App\Tools\GetPostHistory(),
             ],
         );
 

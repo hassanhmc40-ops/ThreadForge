@@ -34,7 +34,7 @@ class GetCampaignRules implements Tool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'blueprint_id' => $schema->integer()
+            'blueprint_id' => $schema->string()
                 ->description('The ID of the blueprint to retrieve rules for.')
                 ->required(),
         ];

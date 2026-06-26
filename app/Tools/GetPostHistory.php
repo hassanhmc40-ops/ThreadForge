@@ -46,7 +46,7 @@ class GetPostHistory implements Tool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'post_id' => $schema->integer()
+            'post_id' => $schema->string()
                 ->description('The ID of the generated post to retrieve.')
                 ->required(),
         ];
