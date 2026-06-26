@@ -14,7 +14,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
 
-    Route::controller(BluePrintController::class)->prefix('/blueprints')->group(function() {
+    Route::controller(BlueprintController::class)->prefix('/blueprints')->group(function() {
         Route::get('/', 'index')->name('blueprints.index');
         Route::post('/', 'store')->name('blueprints.store');
         Route::get('/{blueprint}', 'show')->name('blueprints.show');
