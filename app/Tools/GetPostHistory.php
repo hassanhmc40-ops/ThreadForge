@@ -17,6 +17,9 @@ class GetPostHistory implements Tool
     public function handle(Request $request): string
     {
         $post = GeneratedPost::with('rawContent.blueprint')
+            ->whereHas('rawContent', function ($query) {
+                $query->where('user_id', auth()->id());
+            })
             ->find((int) $request['post_id']);
 
         if (!$post) {
@@ -37,13 +40,13 @@ class GetPostHistory implements Tool
                 'max_hashtags' => $post->rawContent->blueprint->max_hashtags,
                 'max_characters' => $post->rawContent->blueprint->max_characters,
             ] : null,
-        ], JSON_PRETTY_PRINT);
+        ]);
     }
 
     public function schema(JsonSchema $schema): array
     {
         return [
-            'post_id' => $schema->string()
+            'post_id' => $schema->integer()
                 ->description('The ID of the generated post to retrieve.')
                 ->required(),
         ];

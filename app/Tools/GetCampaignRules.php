@@ -16,7 +16,8 @@ class GetCampaignRules implements Tool
 
     public function handle(Request $request): string
     {
-        $blueprint = Blueprint::find((int) $request['blueprint_id']);
+        $blueprint = Blueprint::where('user_id', auth()->id())
+            ->find((int) $request['blueprint_id']);
 
         if (!$blueprint) {
             return json_encode(['error' => 'Blueprint not found with the given ID.']);
@@ -27,13 +28,13 @@ class GetCampaignRules implements Tool
             'max_hashtags' => $blueprint->max_hashtags,
             'max_characters' => $blueprint->max_characters,
             'regles_supplementaires' => $blueprint->regles_supplementaires,
-        ], JSON_PRETTY_PRINT);
+        ]);
     }
 
     public function schema(JsonSchema $schema): array
     {
         return [
-            'blueprint_id' => $schema->string()
+            'blueprint_id' => $schema->integer()
                 ->description('The ID of the blueprint to retrieve rules for.')
                 ->required(),
         ];
