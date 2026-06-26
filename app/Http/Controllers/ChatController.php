@@ -103,16 +103,14 @@ class ChatController extends Controller
             })
             ->findOrFail($id);
 
-        $conversation = AgentConversation::where('generated_post_id', $post->id)->first();
+        $conversation = AgentConversation::with('messages')
+            ->where('generated_post_id', $post->id)
+            ->first();
 
         if (!$conversation) {
             return ChatMessageResource::collection(collect());
         }
 
-        $messages = $conversation->messages()
-            ->orderBy('created_at')
-            ->get();
-
-        return ChatMessageResource::collection($messages);
+        return ChatMessageResource::collection($conversation->messages);
     }
 }

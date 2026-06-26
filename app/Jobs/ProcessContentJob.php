@@ -26,6 +26,7 @@ class ProcessContentJob implements ShouldQueue
         $this->rawContent->update(['statut' => 'processing']);
 
         try {
+            $this->rawContent->load('blueprint');
             $blueprint = $this->rawContent->blueprint;
 
             $systemPrompt = sprintf(
