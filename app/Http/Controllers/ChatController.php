@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Agents\GhostwriterAgent;
 use App\Http\Requests\ChatRequest;
 use App\Http\Resources\ChatMessageResource;
+use App\Models\AgentConversation;
 use App\Models\GeneratedPost;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Facades\DB;
 use Laravel\Ai\Enums\Lab;
 
 class ChatController extends Controller
@@ -58,9 +58,7 @@ class ChatController extends Controller
 
         $agent->forUser(auth()->user());
 
-        $conversation = DB::table('agent_conversations')
-            ->where('generated_post_id', $post->id)
-            ->first();
+        $conversation = AgentConversation::where('generated_post_id', $post->id)->first();
 
         if ($conversation) {
             $agent->continue($conversation->id, auth()->user());
@@ -70,14 +68,13 @@ class ChatController extends Controller
             $response = $agent->prompt(
                 prompt: $request->message,
                 provider: Lab::Groq,
-                model: env('GROQ_MODEL', 'meta-llama/llama-4-scout-17b-16e-instruct'),
+                model: config('ai.providers.groq.model', env('GROQ_MODEL', 'meta-llama/llama-4-scout-17b-16e-instruct')),
             );
 
             $conversationId = $response->conversationId ?? $agent->currentConversation();
 
             if ($conversationId && !$conversation) {
-                DB::table('agent_conversations')
-                    ->where('id', $conversationId)
+                AgentConversation::where('id', $conversationId)
                     ->update(['generated_post_id' => $post->id]);
             }
 
@@ -106,17 +103,13 @@ class ChatController extends Controller
             })
             ->findOrFail($id);
 
-        $conversation = DB::table('agent_conversations')
-            ->where('generated_post_id', $post->id)
-            ->first();
+        $conversation = AgentConversation::where('generated_post_id', $post->id)->first();
 
         if (!$conversation) {
             return ChatMessageResource::collection(collect());
         }
 
-        $messages = DB::table('agent_conversation_messages')
-            ->where('conversation_id', $conversation->id)
-            ->where('user_id', auth()->id())
+        $messages = $conversation->messages()
             ->orderBy('created_at')
             ->get();
 
