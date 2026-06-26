@@ -14,6 +14,29 @@ use Laravel\Ai\Enums\Lab;
 
 class ChatController extends Controller
 {
+    /**
+     * Start or continue a conversation with the Ghostwriter assistant about a post.
+     *
+     * The assistant has access to tools (GetCampaignRules, GetPostHistory)
+     * and remembers previous messages within the same conversation.
+     *
+     * @authenticated
+     *
+     * @urlParam id integer required The post ID to chat about. Example: 1
+     *
+     * @bodyParam message string required The user's message. Example: Give me 3 more aggressive hooks
+     *
+     * @response 200 {
+     *   "conversation_id": "uuid-here",
+     *   "message": {
+     *     "role": "assistant",
+     *     "content": "Here are 3 aggressive hooks..."
+     *   }
+     * }
+     * @response 500 {
+     *   "error": "Failed to generate response. Please try again later."
+     * }
+     */
     public function chat(ChatRequest $request, int $id): JsonResponse
     {
         $post = GeneratedPost::with('rawContent.blueprint')
@@ -52,8 +75,8 @@ class ChatController extends Controller
         $agent = new GhostwriterAgent(
             instructions: $systemPrompt,
             tools: [
-                new \App\Tools\GetCampaignRules(),
-                new \App\Tools\GetPostHistory(),
+                new \App\Tools\GetCampaignRules,
+                new \App\Tools\GetPostHistory,
             ],
         );
 
@@ -98,6 +121,30 @@ class ChatController extends Controller
         }
     }
 
+    /**
+     * Get the conversation history for a post.
+     *
+     * @authenticated
+     *
+     * @urlParam id integer required The post ID. Example: 1
+     *
+     * @response 200 {
+     *   "data": [
+     *     {
+     *       "id": "msg-uuid",
+     *       "role": "user",
+     *       "content": "Give me 3 more aggressive hooks",
+     *       "created_at": "2026-01-01 00:00:00"
+     *     },
+     *     {
+     *       "id": "msg-uuid",
+     *       "role": "assistant",
+     *       "content": "Here are 3 aggressive hooks...",
+     *       "created_at": "2026-01-01 00:00:01"
+     *     }
+     *   ]
+     * }
+     */
     public function history(int $id): AnonymousResourceCollection
     {
         $post = GeneratedPost::with('rawContent')

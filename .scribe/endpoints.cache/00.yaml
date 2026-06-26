@@ -29,42 +29,81 @@ endpoints:
       name:
         custom: []
         name: name
-        description: 'Must not be greater than 255 characters.'
+        description: "The user's full name."
         required: true
-        example: b
+        example: 'John Doe'
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
       email:
         custom: []
         name: email
-        description: 'Must be a valid email address. Must not be greater than 255 characters.'
+        description: "The user's email address."
         required: true
-        example: zbailey@example.net
+        example: john@example.com
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
       password:
         custom: []
         name: password
-        description: 'Must be at least 8 characters.'
+        description: "The user's password (min 8 characters)."
         required: true
-        example: '-0pBNvYgxw'
+        example: secret123
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      password_confirmation:
+        custom: []
+        name: password_confirmation
+        description: 'Confirmation of the password.'
+        required: true
+        example: secret123
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanBodyParameters:
-      name: b
-      email: zbailey@example.net
-      password: '-0pBNvYgxw'
+      name: 'John Doe'
+      email: john@example.com
+      password: secret123
+      password_confirmation: secret123
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 201
+        content: |-
+          {
+            "user": {
+              "id": 1,
+              "name": "John Doe",
+              "email": "john@example.com",
+              "created_at": "2026-01-01 00:00:00"
+            },
+            "token": "1|abc123..."
+          }
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 422
+        content: |-
+          {
+            "message": "The given data was invalid.",
+            "errors": {
+              "email": ["The email has already been taken."]
+            }
+          }
+        headers: []
+        description: ''
     responseFields: []
     auth: []
     controller: null
@@ -96,30 +135,54 @@ endpoints:
       email:
         custom: []
         name: email
-        description: 'Must be a valid email address.'
+        description: "The user's email address."
         required: true
-        example: gbailey@example.net
+        example: john@example.com
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
       password:
         custom: []
         name: password
-        description: ''
+        description: "The user's password."
         required: true
-        example: '|]|{+-'
+        example: secret123
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanBodyParameters:
-      email: gbailey@example.net
-      password: '|]|{+-'
+      email: john@example.com
+      password: secret123
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "user": {
+              "id": 1,
+              "name": "John Doe",
+              "email": "john@example.com",
+              "created_at": "2026-01-01 00:00:00"
+            },
+            "token": "1|abc123..."
+          }
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 401
+        content: |-
+          {
+            "message": "Invalid email or password."
+          }
+        headers: []
+        description: ''
     responseFields: []
     auth: []
     controller: null
@@ -136,9 +199,9 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: ''
+      title: 'Revoke the current access token.'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
     headers:
       Content-Type: application/json
@@ -150,7 +213,16 @@ endpoints:
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "message": "Logged out successfully."
+          }
+        headers: []
+        description: ''
     responseFields: []
     auth: []
     controller: null
@@ -167,9 +239,9 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: ''
+      title: "Get the authenticated user's profile."
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
     headers:
       Content-Type: application/json
@@ -184,13 +256,18 @@ endpoints:
     responses:
       -
         custom: []
-        status: 401
-        content: '{"message":"Unauthenticated."}'
-        headers:
-          cache-control: 'no-cache, private'
-          content-type: application/json
-          access-control-allow-origin: '*'
-        description: null
+        status: 200
+        content: |-
+          {
+            "data": {
+              "id": 1,
+              "name": "John Doe",
+              "email": "john@example.com",
+              "created_at": "2026-01-01 00:00:00"
+            }
+          }
+        headers: []
+        description: ''
     responseFields: []
     auth: []
     controller: null
@@ -207,9 +284,9 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: ''
+      title: 'List all blueprints for the authenticated user.'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
     headers:
       Content-Type: application/json
@@ -224,13 +301,24 @@ endpoints:
     responses:
       -
         custom: []
-        status: 401
-        content: '{"message":"Unauthenticated."}'
-        headers:
-          cache-control: 'no-cache, private'
-          content-type: application/json
-          access-control-allow-origin: '*'
-        description: null
+        status: 200
+        content: |-
+          {
+            "data": [
+              {
+                "id": 1,
+                "name": "Tech Twitter Style",
+                "tone": "professional yet relaxed",
+                "max_hashtags": 3,
+                "max_characters": 280,
+                "regles_supplementaires": null,
+                "posts_count": 5,
+                "created_at": "2026-01-01 00:00:00"
+              }
+            ]
+          }
+        headers: []
+        description: ''
     responseFields: []
     auth: []
     controller: null
@@ -247,9 +335,9 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: ''
+      title: 'Create a new blueprint.'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
     headers:
       Content-Type: application/json
@@ -262,66 +350,84 @@ endpoints:
       name:
         custom: []
         name: name
-        description: 'Must not be greater than 255 characters.'
+        description: 'The blueprint name.'
         required: true
-        example: b
+        example: 'Tech Twitter Style'
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
       tone:
         custom: []
         name: tone
-        description: 'Must not be greater than 255 characters.'
+        description: 'The desired tone of voice.'
         required: true
-        example: 'n'
+        example: 'professional yet relaxed'
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
       max_hashtags:
         custom: []
         name: max_hashtags
-        description: 'Must be at least 0. Must not be greater than 10.'
+        description: 'Maximum number of hashtags (default 1).'
         required: false
-        example: 7
+        example: 3
         type: integer
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
       max_characters:
         custom: []
         name: max_characters
-        description: 'Must be at least 1. Must not be greater than 1000.'
+        description: 'Maximum character count (default 280).'
         required: false
-        example: 16
+        example: 280
         type: integer
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
       regles_supplementaires:
         custom: []
         name: regles_supplementaires
-        description: ''
+        description: 'Extra rules as a JSON string.'
         required: false
-        example: architecto
+        example: '["Keep it concise","Use code examples"]'
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: true
         deprecated: false
     cleanBodyParameters:
-      name: b
-      tone: 'n'
-      max_hashtags: 7
-      max_characters: 16
-      regles_supplementaires: architecto
+      name: 'Tech Twitter Style'
+      tone: 'professional yet relaxed'
+      max_hashtags: 3
+      max_characters: 280
+      regles_supplementaires: '["Keep it concise","Use code examples"]'
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 201
+        content: |-
+          {
+            "data": {
+              "id": 1,
+              "name": "Tech Twitter Style",
+              "tone": "professional yet relaxed",
+              "max_hashtags": 3,
+              "max_characters": 280,
+              "regles_supplementaires": "[\"Keep it concise\",\"Use code examples\"]",
+              "posts_count": 0,
+              "created_at": "2026-01-01 00:00:00"
+            }
+          }
+        headers: []
+        description: ''
     responseFields: []
     auth: []
     controller: null
@@ -338,9 +444,9 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: ''
+      title: 'Get a single blueprint by ID.'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
     headers:
       Content-Type: application/json
@@ -349,16 +455,16 @@ endpoints:
       id:
         custom: []
         name: id
-        description: 'The ID of the blueprint.'
+        description: 'The blueprint ID.'
         required: true
-        example: architecto
-        type: string
+        example: 1
+        type: integer
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      id: architecto
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -367,13 +473,31 @@ endpoints:
     responses:
       -
         custom: []
-        status: 401
-        content: '{"message":"Unauthenticated."}'
-        headers:
-          cache-control: 'no-cache, private'
-          content-type: application/json
-          access-control-allow-origin: '*'
-        description: null
+        status: 200
+        content: |-
+          {
+            "data": {
+              "id": 1,
+              "name": "Tech Twitter Style",
+              "tone": "professional yet relaxed",
+              "max_hashtags": 3,
+              "max_characters": 280,
+              "regles_supplementaires": null,
+              "posts_count": 5,
+              "created_at": "2026-01-01 00:00:00"
+            }
+          }
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 404
+        content: |-
+          {
+            "message": "Resource not found."
+          }
+        headers: []
+        description: ''
     responseFields: []
     auth: []
     controller: null
@@ -390,9 +514,9 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: ''
+      title: 'Update an existing blueprint.'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
     headers:
       Content-Type: application/json
@@ -401,82 +525,100 @@ endpoints:
       id:
         custom: []
         name: id
-        description: 'The ID of the blueprint.'
+        description: 'The blueprint ID.'
         required: true
-        example: architecto
-        type: string
+        example: 1
+        type: integer
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      id: architecto
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
       name:
         custom: []
         name: name
-        description: 'Must not be greater than 255 characters.'
+        description: 'The blueprint name.'
         required: false
-        example: b
+        example: 'Updated Style'
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
       tone:
         custom: []
         name: tone
-        description: 'Must not be greater than 255 characters.'
+        description: 'The desired tone of voice.'
         required: false
-        example: 'n'
+        example: humorous
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
       max_hashtags:
         custom: []
         name: max_hashtags
-        description: 'Must be at least 0. Must not be greater than 10.'
+        description: 'Maximum number of hashtags.'
         required: false
-        example: 7
+        example: 5
         type: integer
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
       max_characters:
         custom: []
         name: max_characters
-        description: 'Must be at least 1. Must not be greater than 1000.'
+        description: 'Maximum character count.'
         required: false
-        example: 16
+        example: 400
         type: integer
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
       regles_supplementaires:
         custom: []
         name: regles_supplementaires
-        description: ''
+        description: 'Extra rules as a JSON string.'
         required: false
-        example: architecto
+        example: '["New rule"]'
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: true
         deprecated: false
     cleanBodyParameters:
-      name: b
-      tone: 'n'
-      max_hashtags: 7
-      max_characters: 16
-      regles_supplementaires: architecto
+      name: 'Updated Style'
+      tone: humorous
+      max_hashtags: 5
+      max_characters: 400
+      regles_supplementaires: '["New rule"]'
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "data": {
+              "id": 1,
+              "name": "Updated Style",
+              "tone": "humorous",
+              "max_hashtags": 5,
+              "max_characters": 400,
+              "regles_supplementaires": "[\"New rule\"]",
+              "posts_count": 5,
+              "created_at": "2026-01-01 00:00:00"
+            }
+          }
+        headers: []
+        description: ''
     responseFields: []
     auth: []
     controller: null
@@ -493,9 +635,9 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: ''
+      title: 'Delete a blueprint.'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
     headers:
       Content-Type: application/json
@@ -504,22 +646,28 @@ endpoints:
       id:
         custom: []
         name: id
-        description: 'The ID of the blueprint.'
+        description: 'The blueprint ID.'
         required: true
-        example: architecto
-        type: string
+        example: 1
+        type: integer
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      id: architecto
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 204
+        content: '{}'
+        headers: []
+        description: ''
     responseFields: []
     auth: []
     controller: null
@@ -536,30 +684,51 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: ''
+      title: 'List all raw contents for the authenticated user.'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
     headers:
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
-    queryParameters: []
-    cleanQueryParameters: []
+    queryParameters:
+      statut:
+        custom: []
+        name: statut
+        description: 'Filter by status.'
+        required: false
+        example: completed
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanQueryParameters:
+      statut: completed
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
         custom: []
-        status: 401
-        content: '{"message":"Unauthenticated."}'
-        headers:
-          cache-control: 'no-cache, private'
-          content-type: application/json
-          access-control-allow-origin: '*'
-        description: null
+        status: 200
+        content: |-
+          {
+            "data": [
+              {
+                "id": 1,
+                "contenu_brut": "Raw markdown content...",
+                "statut": "completed",
+                "blueprint": { "id": 1, "name": "Tech Style" },
+                "generated_post": null,
+                "created_at": "2026-01-01 00:00:00"
+              }
+            ]
+          }
+        headers: []
+        description: ''
     responseFields: []
     auth: []
     controller: null
@@ -576,9 +745,11 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: ''
-      description: ''
-      authenticated: false
+      title: 'Submit raw content for AI processing.'
+      description: |-
+        Dispatches a queue job to process the content asynchronously.
+        Returns immediately with HTTP 202.
+      authenticated: true
       deprecated: false
     headers:
       Content-Type: application/json
@@ -591,30 +762,40 @@ endpoints:
       blueprint_id:
         custom: []
         name: blueprint_id
-        description: 'Must match an existing stored value.'
+        description: 'The blueprint ID to apply.'
         required: true
-        example: 16
+        example: 1
         type: integer
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
       contenu_brut:
         custom: []
         name: contenu_brut
-        description: ''
+        description: 'The raw content to process (markdown/text).'
         required: true
-        example: architecto
+        example: '# Hello World\n\nThis is a test post.'
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanBodyParameters:
-      blueprint_id: 16
-      contenu_brut: architecto
+      blueprint_id: 1
+      contenu_brut: '# Hello World\n\nThis is a test post.'
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 202
+        content: |-
+          {
+            "message": "Content accepted for processing.",
+            "raw_content_id": 1
+          }
+        headers: []
+        description: ''
     responseFields: []
     auth: []
     controller: null
@@ -631,9 +812,9 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: ''
+      title: 'Get a single raw content by ID.'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
     headers:
       Content-Type: application/json
@@ -650,8 +831,20 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         deprecated: false
+      id:
+        custom: []
+        name: id
+        description: 'The raw content ID.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
     cleanUrlParameters:
       rawContent: architecto
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -660,13 +853,20 @@ endpoints:
     responses:
       -
         custom: []
-        status: 401
-        content: '{"message":"Unauthenticated."}'
-        headers:
-          cache-control: 'no-cache, private'
-          content-type: application/json
-          access-control-allow-origin: '*'
-        description: null
+        status: 200
+        content: |-
+          {
+            "data": {
+              "id": 1,
+              "contenu_brut": "Raw markdown content...",
+              "statut": "completed",
+              "blueprint": { "id": 1, "name": "Tech Style" },
+              "generated_post": { "id": 1, "hook_propose": "..." },
+              "created_at": "2026-01-01 00:00:00"
+            }
+          }
+        headers: []
+        description: ''
     responseFields: []
     auth: []
     controller: null
@@ -683,30 +883,53 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: ''
+      title: 'List all generated posts for the authenticated user.'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
     headers:
       Content-Type: application/json
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
-    queryParameters: []
-    cleanQueryParameters: []
+    queryParameters:
+      statut:
+        custom: []
+        name: statut
+        description: 'Filter by status (draft, archived, posted).'
+        required: false
+        example: draft
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanQueryParameters:
+      statut: draft
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
     responses:
       -
         custom: []
-        status: 401
-        content: '{"message":"Unauthenticated."}'
-        headers:
-          cache-control: 'no-cache, private'
-          content-type: application/json
-          access-control-allow-origin: '*'
-        description: null
+        status: 200
+        content: |-
+          {
+            "data": [
+              {
+                "id": 1,
+                "hook_propose": "Your hook here",
+                "body_points": ["Point 1", "Point 2"],
+                "technical_readability_score": 85,
+                "suggested_hashtags": ["#Tech", "#Laravel"],
+                "tone_compliance_justification": "Matches the professional tone",
+                "statut": "draft",
+                "created_at": "2026-01-01 00:00:00"
+              }
+            ]
+          }
+        headers: []
+        description: ''
     responseFields: []
     auth: []
     controller: null
@@ -723,9 +946,9 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: ''
+      title: 'Get a single generated post by ID.'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
     headers:
       Content-Type: application/json
@@ -734,16 +957,16 @@ endpoints:
       id:
         custom: []
         name: id
-        description: 'The ID of the post.'
+        description: 'The post ID.'
         required: true
-        example: architecto
-        type: string
+        example: 1
+        type: integer
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      id: architecto
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -752,13 +975,22 @@ endpoints:
     responses:
       -
         custom: []
-        status: 401
-        content: '{"message":"Unauthenticated."}'
-        headers:
-          cache-control: 'no-cache, private'
-          content-type: application/json
-          access-control-allow-origin: '*'
-        description: null
+        status: 200
+        content: |-
+          {
+            "data": {
+              "id": 1,
+              "hook_propose": "Your hook here",
+              "body_points": ["Point 1", "Point 2"],
+              "technical_readability_score": 85,
+              "suggested_hashtags": ["#Tech", "#Laravel"],
+              "tone_compliance_justification": "Matches the professional tone",
+              "statut": "draft",
+              "created_at": "2026-01-01 00:00:00"
+            }
+          }
+        headers: []
+        description: ''
     responseFields: []
     auth: []
     controller: null
@@ -775,9 +1007,9 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: ''
+      title: 'Update the publication status of a generated post.'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
     headers:
       Content-Type: application/json
@@ -786,37 +1018,49 @@ endpoints:
       id:
         custom: []
         name: id
-        description: 'The ID of the post.'
+        description: 'The post ID.'
         required: true
-        example: architecto
-        type: string
+        example: 1
+        type: integer
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      id: architecto
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
       statut:
         custom: []
         name: statut
-        description: ''
+        description: 'The new status (draft, archived, posted).'
         required: true
-        example: archived
+        example: posted
         type: string
-        enumValues:
-          - draft
-          - archived
-          - posted
-        exampleWasSpecified: false
+        enumValues: []
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanBodyParameters:
-      statut: archived
+      statut: posted
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "message": "Post status updated successfully.",
+            "post": {
+              "data": {
+                "id": 1,
+                "statut": "posted"
+              }
+            }
+          }
+        headers: []
+        description: ''
     responseFields: []
     auth: []
     controller: null
@@ -833,9 +1077,11 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: ''
-      description: ''
-      authenticated: false
+      title: 'Start or continue a conversation with the Ghostwriter assistant about a post.'
+      description: |-
+        The assistant has access to tools (GetCampaignRules, GetPostHistory)
+        and remembers previous messages within the same conversation.
+      authenticated: true
       deprecated: false
     headers:
       Content-Type: application/json
@@ -844,34 +1090,56 @@ endpoints:
       id:
         custom: []
         name: id
-        description: 'The ID of the post.'
+        description: 'The post ID to chat about.'
         required: true
-        example: architecto
-        type: string
+        example: 1
+        type: integer
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      id: architecto
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
       message:
         custom: []
         name: message
-        description: 'Must not be greater than 2000 characters.'
+        description: "The user's message."
         required: true
-        example: b
+        example: 'Give me 3 more aggressive hooks'
         type: string
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanBodyParameters:
-      message: b
+      message: 'Give me 3 more aggressive hooks'
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "conversation_id": "uuid-here",
+            "message": {
+              "role": "assistant",
+              "content": "Here are 3 aggressive hooks..."
+            }
+          }
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 500
+        content: |-
+          {
+            "error": "Failed to generate response. Please try again later."
+          }
+        headers: []
+        description: ''
     responseFields: []
     auth: []
     controller: null
@@ -888,9 +1156,9 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: ''
+      title: 'Get the conversation history for a post.'
       description: ''
-      authenticated: false
+      authenticated: true
       deprecated: false
     headers:
       Content-Type: application/json
@@ -899,16 +1167,16 @@ endpoints:
       id:
         custom: []
         name: id
-        description: 'The ID of the post.'
+        description: 'The post ID.'
         required: true
-        example: architecto
-        type: string
+        example: 1
+        type: integer
         enumValues: []
-        exampleWasSpecified: false
+        exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      id: architecto
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -917,13 +1185,26 @@ endpoints:
     responses:
       -
         custom: []
-        status: 401
-        content: '{"message":"Unauthenticated."}'
-        headers:
-          cache-control: 'no-cache, private'
-          content-type: application/json
-          access-control-allow-origin: '*'
-        description: null
+        status: 200
+        content: |-
+          {
+            "data": [
+              {
+                "id": "msg-uuid",
+                "role": "user",
+                "content": "Give me 3 more aggressive hooks",
+                "created_at": "2026-01-01 00:00:00"
+              },
+              {
+                "id": "msg-uuid",
+                "role": "assistant",
+                "content": "Here are 3 aggressive hooks...",
+                "created_at": "2026-01-01 00:00:01"
+              }
+            ]
+          }
+        headers: []
+        description: ''
     responseFields: []
     auth: []
     controller: null

@@ -12,6 +12,28 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    /**
+     * @bodyParam name string required The user's full name. Example: John Doe
+     * @bodyParam email string required The user's email address. Example: john@example.com
+     * @bodyParam password string required The user's password (min 8 characters). Example: secret123
+     * @bodyParam password_confirmation string required Confirmation of the password. Example: secret123
+     *
+     * @response 201 {
+     *   "user": {
+     *     "id": 1,
+     *     "name": "John Doe",
+     *     "email": "john@example.com",
+     *     "created_at": "2026-01-01 00:00:00"
+     *   },
+     *   "token": "1|abc123..."
+     * }
+     * @response 422 {
+     *   "message": "The given data was invalid.",
+     *   "errors": {
+     *     "email": ["The email has already been taken."]
+     *   }
+     * }
+     */
     public function register(RegisterRequest $request): JsonResponse
     {
         $user = User::create([
@@ -28,6 +50,23 @@ class AuthController extends Controller
         ], 201);
     }
 
+    /**
+     * @bodyParam email string required The user's email address. Example: john@example.com
+     * @bodyParam password string required The user's password. Example: secret123
+     *
+     * @response 200 {
+     *   "user": {
+     *     "id": 1,
+     *     "name": "John Doe",
+     *     "email": "john@example.com",
+     *     "created_at": "2026-01-01 00:00:00"
+     *   },
+     *   "token": "1|abc123..."
+     * }
+     * @response 401 {
+     *   "message": "Invalid email or password."
+     * }
+     */
     public function login(LoginRequest $request): JsonResponse
     {
         $user = User::where('email', $request->email)->first();
@@ -46,6 +85,15 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Revoke the current access token.
+     *
+     * @authenticated
+     *
+     * @response 200 {
+     *   "message": "Logged out successfully."
+     * }
+     */
     public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()->delete();
@@ -55,6 +103,20 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Get the authenticated user's profile.
+     *
+     * @authenticated
+     *
+     * @response 200 {
+     *   "data": {
+     *     "id": 1,
+     *     "name": "John Doe",
+     *     "email": "john@example.com",
+     *     "created_at": "2026-01-01 00:00:00"
+     *   }
+     * }
+     */
     public function user(Request $request): UserResource
     {
         return new UserResource($request->user());
