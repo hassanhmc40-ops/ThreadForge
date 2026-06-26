@@ -9,6 +9,7 @@ use App\Models\AgentConversation;
 use App\Models\GeneratedPost;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Log;
 use Laravel\Ai\Enums\Lab;
 
 class ChatController extends Controller
@@ -86,11 +87,13 @@ class ChatController extends Controller
                 ],
             ]);
         } catch (\Exception $e) {
-            $conversationId = $agent->currentConversation();
+            Log::error('Chat agent failed: ' . $e->getMessage(), [
+                'post_id' => $post->id,
+                'trace' => $e->getTraceAsString(),
+            ]);
 
             return response()->json([
-                'conversation_id' => $conversationId,
-                'error' => 'Failed to generate response: ' . $e->getMessage(),
+                'error' => 'Failed to generate response. Please try again later.',
             ], 500);
         }
     }

@@ -14,7 +14,7 @@ class RepurposeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'blueprint_id' => ['required', 'integer', 'exists:blueprints,id'],
+            'blueprint_id' => ['required', 'integer', 'exists:blueprints,id,user_id,' . auth()->id()],
             'contenu_brut' => ['required', 'string'],
         ];
     }
