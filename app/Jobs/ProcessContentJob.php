@@ -4,13 +4,18 @@ namespace App\Jobs;
 
 use App\Models\GeneratedPost;
 use App\Models\RawContent;
+use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
+use Laravel\Ai\Enums\Lab;
+use Laravel\Ai\StructuredAnonymousAgent;
 
 class ProcessContentJob implements ShouldQueue
 {
     use Queueable;
+
+    public int $tries = 3;
 
     public function __construct(
         public RawContent $rawContent
@@ -21,39 +26,64 @@ class ProcessContentJob implements ShouldQueue
         $this->rawContent->update(['statut' => 'processing']);
 
         try {
-            $response = $this->callGrokApi($this->rawContent->contenu_brut);
+            $blueprint = $this->rawContent->blueprint;
 
-            $this->validateResponse($response);
+            $systemPrompt = sprintf(
+                "You are a tech content creator specializing in X/Twitter posts. "
+                . "Generate a tweet from the provided raw content following these style rules:\n"
+                . "- Tone: %s\n"
+                . "- Maximum hashtags: %d\n"
+                . "- Maximum characters: %d\n"
+                . "%s"
+                . "\nRespond with the exact structured format requested.",
+                $blueprint->tone,
+                $blueprint->max_hashtags,
+                $blueprint->max_characters,
+                $blueprint->regles_supplementaires ? "- Extra rules: {$blueprint->regles_supplementaires}\n" : ''
+            );
+
+            $agent = new StructuredAnonymousAgent(
+                instructions: $systemPrompt,
+                messages: [],
+                tools: [],
+                schema: fn (JsonSchema $schema) => [
+                    'hook_propose' => $schema->string()->required(),
+                    'body_points' => $schema->array()->items($schema->string())->required(),
+                    'technical_readability_score' => $schema->integer()->required(),
+                    'suggested_hashtags' => $schema->array()->items($schema->string())->required(),
+                    'tone_compliance_justification' => $schema->string()->required(),
+                ],
+            );
+
+            $response = $agent->prompt(
+                prompt: "Raw content to transform:\n\n" . $this->rawContent->contenu_brut,
+                provider: Lab::Groq,
+                model: env('GROQ_MODEL', 'meta-llama/llama-4-scout-17b-16e-instruct'),
+            );
+
+            $data = $response->toArray();
+
+            $this->validateResponse($data);
 
             GeneratedPost::create([
                 'raw_content_id' => $this->rawContent->id,
-                'hook_propose' => $response['hook_propose'],
-                'body_points' => $response['body_points'],
-                'technical_readability_score' => $response['technical_readability_score'],
-                'suggested_hashtags' => $response['suggested_hashtags'],
-                'tone_compliance_justification' => $response['tone_compliance_justification'],
-                'payload_brut' => $response,
+                'hook_propose' => $data['hook_propose'],
+                'body_points' => $data['body_points'],
+                'technical_readability_score' => $data['technical_readability_score'],
+                'suggested_hashtags' => $data['suggested_hashtags'],
+                'tone_compliance_justification' => $data['tone_compliance_justification'],
+                'payload_brut' => $data,
                 'statut' => 'draft',
             ]);
 
             $this->rawContent->update(['statut' => 'completed']);
         } catch (\Exception $e) {
-            Log::error('Content processing failed: ' . $e->getMessage());
+            Log::error('Content processing failed: ' . $e->getMessage(), [
+                'raw_content_id' => $this->rawContent->id,
+                'exception' => $e,
+            ]);
             $this->rawContent->update(['statut' => 'failed']);
         }
-    }
-
-    private function callGrokApi(string $content): array
-    {
-        // TODO: Implement Grok API call via laravel/ai SDK
-        // For now, return a mock response that matches the schema
-        return [
-            'hook_propose' => substr('Check out this amazing tech insight: ' . $content, 0, 280),
-            'body_points' => ['Point 1: Key finding', 'Point 2: Technical detail'],
-            'technical_readability_score' => 75,
-            'suggested_hashtags' => ['#Tech', '#Dev'],
-            'tone_compliance_justification' => 'Professional tone maintained throughout.',
-        ];
     }
 
     private function validateResponse(array $response): void
